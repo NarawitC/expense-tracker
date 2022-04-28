@@ -68,7 +68,6 @@ function TransactionForm() {
 
   const handleSubmitForm = (event) => {
     event.preventDefault();
-    navigate('/home');
     const inputError = {};
     if (validator.isEmpty(payeeInput)) {
       inputError.payee = 'Payee is required';
@@ -86,6 +85,7 @@ function TransactionForm() {
     } else {
       setError({});
     }
+    // navigate('/home');
   };
 
   const handleClickDelete = async () => {
