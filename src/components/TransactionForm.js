@@ -3,6 +3,8 @@ import { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { transactionContext } from '../contexts/TransactionContext';
 import { DELETE_TRANSACTION } from '../reducers/TransactionReducer';
+import validator from 'validator';
+
 const INCOME = 'INCOME';
 const EXPENSE = 'EXPENSE';
 
@@ -23,6 +25,8 @@ function TransactionForm() {
 
   const [expenses, setExpenses] = useState([]);
   const [incomes, setIncomes] = useState([]);
+
+  const [error, setError] = useState({});
 
   useEffect(() => {
     if (params.transactionId) {
@@ -65,6 +69,23 @@ function TransactionForm() {
   const handleSubmitForm = (event) => {
     event.preventDefault();
     navigate('/home');
+    const inputError = {};
+    if (validator.isEmpty(payeeInput)) {
+      inputError.payee = 'Payee is required';
+    }
+    if (validator.isEmpty(amountInput)) {
+      inputError.amount = 'Amount is required';
+    } else if (!validator.isNumeric(amountInput)) {
+      inputError.amount = 'Amount must be numeric';
+    }
+    if (validator.isEmpty(dateInput)) {
+      inputError.date = 'Date is required';
+    }
+    if (Object.keys(inputError).length > 0) {
+      setError(inputError);
+    } else {
+      setError({});
+    }
   };
 
   const handleClickDelete = async () => {
@@ -130,7 +151,12 @@ function TransactionForm() {
           </div>
           <div className="col-sm-6 ">
             <label className="form-label">Payee</label>
-            <input type="text" className="form-control" />
+            <input
+              type="text"
+              className="form-control"
+              value={payeeInput}
+              onChange={(event) => setPayeeInput(event.target.value)}
+            />
           </div>
           <div className="col-sm-6 ">
             <label className="form-label">Category</label>
@@ -148,11 +174,21 @@ function TransactionForm() {
           </div>
           <div className="col-sm-6 ">
             <label className="form-label">Amount</label>
-            <input type="text" className="form-control" />
+            <input
+              type="text"
+              className="form-control"
+              value={amountInput}
+              onChange={(event) => setAmountInput(event.target.value)}
+            />
           </div>
           <div className="col-sm-6 ">
             <label className="form-label">Date</label>
-            <input type="date" className="form-control" />
+            <input
+              type="date"
+              className="form-control"
+              value={dateInput}
+              onChange={(event) => setDateInput(event.target.value)}
+            />
           </div>
           <div className="col-12">
             <div className="d-grid mt-3">
