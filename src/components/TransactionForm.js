@@ -9,13 +9,21 @@ const EXPENSE = 'EXPENSE';
 function TransactionForm() {
   const [transaction, serTransaction] = useState({});
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation();
   const params = useParams();
   const [notFoundError, setNotFoundError] = useState(false);
   const [loading, setLoading] = useState(false);
   const { dispatch } = useContext(transactionContext);
-  const [categories, setCategories] = useState([]);
   const [categoryType, setCategoryType] = useState(EXPENSE);
+
+  const [payeeInput, setPayeeInput] = useState('');
+  const [amountInput, setAmountInput] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [dateInput, setDateInput] = useState('');
+
+  const [expenses, setExpenses] = useState([]);
+  const [incomes, setIncomes] = useState([]);
+
   useEffect(() => {
     if (params.transactionId) {
       axios
@@ -34,7 +42,22 @@ function TransactionForm() {
   useEffect(() => {
     const fetchCategory = async () => {
       const res = await axios.get('http://localhost:8080/categories');
-      setCategories(res.data.categories);
+
+      const resultExpenses = res.data.categories.filter(
+        (el) => el.type === EXPENSE
+      );
+
+      const resultIncomes = res.data.categories.filter(
+        (el) => el.type === INCOME
+      );
+
+      setExpenses(resultExpenses);
+      setIncomes(resultIncomes);
+      if (categoryType === EXPENSE) {
+        setSelectedCategoryId(resultExpenses[0].id);
+      } else {
+        setSelectedCategoryId(resultIncomes[0].id);
+      }
     };
     fetchCategory();
   }, []);
@@ -61,10 +84,6 @@ function TransactionForm() {
     }
   };
 
-  const filteredCategories = categories.filter(
-    (el) => el.type === categoryType
-  );
-
   if (notFoundError)
     return <h1 className="text-white">404 !!! Transaction is not found</h1>;
   return (
@@ -78,7 +97,10 @@ function TransactionForm() {
               id="cbx-expense"
               name="type"
               defaultChecked
-              onChange={() => setCategoryType(EXPENSE)}
+              onChange={() => {
+                setCategoryType(EXPENSE);
+                setSelectedCategoryId(expenses[0].id);
+              }}
             />
             <label
               htmlFor="cbx-expense"
@@ -91,7 +113,10 @@ function TransactionForm() {
               className="btn-check"
               id="cbx-income"
               name="type"
-              onChange={() => setCategoryType(INCOME)}
+              onChange={() => {
+                setCategoryType(INCOME);
+                setSelectedCategoryId(incomes[0].id);
+              }}
             />
             <label
               htmlFor="cbx-income"
@@ -109,8 +134,12 @@ function TransactionForm() {
           </div>
           <div className="col-sm-6 ">
             <label className="form-label">Category</label>
-            <select className="form-select">
-              {filteredCategories.map((el) => (
+            <select
+              className="form-select"
+              defaultValue={selectedCategoryId}
+              onChange={(event) => setSelectedCategoryId(event.target.value)}
+            >
+              {(categoryType === EXPENSE ? expenses : incomes).map((el) => (
                 <option key={el.id} value={el.id}>
                   {el.name}
                 </option>
